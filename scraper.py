@@ -20,7 +20,6 @@ class Scraper():
     PAUSE_TIME = 1
     SCROLL_GAP = 10
     CLICK_REPEAT = 10
-    subjects = ['Economics', 'History', 'Biology', 'Civics', 'English', 'Geography', 'Elements of Book Keeping and Accountancy', 'Maths', 'General Knowledge', 'Physics', 'Chemistry', 'Elements of Business']
     data_structure = {
         'q': '',
         'qImage': '',
@@ -41,10 +40,10 @@ class Scraper():
     def __init__(self) -> None:
         self.driver = uc.Chrome()
         self.actions = ActionChains(self.driver)
-    def start(self, classes):
+    def start(self, classes, subjects):
         for class_name in classes:
             class_url  = self.base_url+str(class_name)
-            for subject in self.subjects:
+            for subject in subjects:
                 subject_url = class_url + '/'+ slugify(subject)
                 self.driver.get(subject_url)
                 topic_urls = []
