@@ -19,6 +19,7 @@ class Scraper():
     host = 'https://www.toppr.com'
     PAUSE_TIME = 1
     SCROLL_GAP = 10
+    CLICK_REPEAT = 10
     subjects = ['Economics', 'History', 'Biology', 'Civics', 'English', 'Geography', 'Elements of Book Keeping and Accountancy', 'Maths', 'General Knowledge', 'Physics', 'Chemistry', 'Elements of Business']
     data_structure = {
         'q': '',
@@ -104,7 +105,14 @@ class Scraper():
             #get options and correct answer
             for option in options:
                 if option_counter == 0:
-                    self.actions.move_to_element(option).click().perform()
+                    answer_check = True
+                    while answer_check:
+                        try:
+                            self.actions.move_to_element(option).click().perform()
+                            answer_element = question_body.find_element(By.XPATH,  './/div[contains(@class, "Option_correct__")]')
+                            answer_check = False
+                        except:
+                            time.sleep(self.PAUSE_TIME)
                     # option.click()
                 _letter = alc[option_counter].capitalize()
                 option_class = option.get_attribute('class')
@@ -121,10 +129,15 @@ class Scraper():
             answer = answer[:-1]
             _data['a'] = answer
             # get explanation
-            view_solution = question_body.find_element(By.XPATH, './/div[contains(@class, "Question_answerCtaWrapper__")]')
-            self.actions.move_to_element(view_solution).perform()
-            self.actions.move_to_element(view_solution).click().perform()
-            explanation_element = question_body.find_element(By.XPATH, './/div[contains(@class, "Question_list__")]')
+            view_solution = question_body.find_element(By.XPATH, './/div[contains(@class, "Question_answerCtaWrapper_")]')
+            explanation_check = True
+            while explanation_check:
+                try : 
+                    self.actions.move_to_element(view_solution).click().perform()
+                    explanation_element = question_body.find_element(By.XPATH, './/div[contains(@class, "Question_list__")]')
+                    explanation_check = False
+                except:
+                    time.sleep(self.PAUSE_TIME)
             explanation = explanation_element.text
             _data['e'] = explanation
             df = pd.DataFrame(data=_data,  index=[0])
@@ -132,4 +145,4 @@ class Scraper():
             make_header = False
             del _data, df
             self.question_index += 1
-            print(f'{self.question_index} questions loaded .')
+            print(f'{self.question_index} questions loaded , current subject : {subject} .')
