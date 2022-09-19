@@ -15,6 +15,7 @@ from slugify import slugify
 
 class Scraper():
     question_index = 0
+    make_header = True
     base_url = 'https://www.toppr.com/ask/content/cbse/class-'
     host = 'https://www.toppr.com'
     PAUSE_TIME = 1
@@ -85,7 +86,6 @@ class Scraper():
             last_height = new_height
             
         questions_body = self.driver.find_elements(By.XPATH, '//div[contains(@class, "Question_body__")]')
-        make_header = True
         for question_body in questions_body:
             #get question
             question_element = question_body.find_element(By.XPATH,  './/h2[contains(@class, "Question_question__")]')
@@ -140,8 +140,8 @@ class Scraper():
             explanation = explanation_element.text
             _data['e'] = explanation
             df = pd.DataFrame(data=_data,  index=[0])
-            df.to_csv('.data/data.csv', mode='a', index=False, sep='|',  header=make_header)
-            make_header = False
+            df.to_csv('.data/data.csv', mode='a', index=False, sep='|',  header=self.make_header)
+            self.make_header = False
             del _data, df
             self.question_index += 1
             print(f'{self.question_index} questions loaded , current subject : {subject} .')
