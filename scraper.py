@@ -41,7 +41,7 @@ class Scraper():
     def __init__(self) -> None:
         self.driver = uc.Chrome()
         self.actions = ActionChains(self.driver)
-    def start(self, classes, subjects):
+    def start(self, classes, subjects, skip_urls):
         for class_name in classes:
             class_url  = self.base_url+str(class_name)
             for subject in subjects:
@@ -63,11 +63,12 @@ class Scraper():
                         difficulty_urls.append(_difficulty_url)
                     for difficulty_url in difficulty_urls:
                         difficulty = re.findall(r'\w+(?=\/)', difficulty_url)[-1]
-                        self.scrape(difficulty_url, class_name, subject, topic, difficulty)
+                        self.scrape(difficulty_url, class_name, subject, topic, difficulty, skip_urls)
 
-                    a = 0
 
-    def scrape(self, url, class_number,subject,topic, difficulty):
+    def scrape(self, url, class_number,subject,topic, difficulty, skip_urls):
+        if url in skip_urls:
+            return
         self.driver.get(url)
         last_height = self.driver.execute_script("return document.body.scrollHeight")
         while True:
