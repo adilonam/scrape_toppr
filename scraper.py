@@ -15,9 +15,6 @@ from slugify import slugify
 
 
 
-# LOWERcase the answer the link of images in qimage
-# Our experts are building a solution for this replace the answer with blank 
-# delete new line
 class Scraper():
     question_index = 0
     make_header = True
@@ -26,6 +23,7 @@ class Scraper():
     PAUSE_TIME = 1
     SCROLL_GAP = 10
     CLICK_REPEAT = 10
+    QTYPES = ['ordinary', 'katex', 'table']
     data_structure = {
         'q': '',
         'qImage': '',
@@ -41,7 +39,8 @@ class Scraper():
         'topic': '',
         'subject': '',
         'difficulty': '',
-        'class': ''
+        'class': '',
+        'qType':''
     }
     def __init__(self) -> None:
         self.driver = uc.Chrome()
@@ -93,13 +92,21 @@ class Scraper():
             
         questions_body = self.driver.find_elements(By.XPATH, '//div[contains(@class, "Question_body__")]')
         for question_body in questions_body:
-            #get question
+            #get question 
             question_element = question_body.find_element(By.XPATH,  './/h2[contains(@class, "Question_question__")]')
             _data = self.data_structure.copy()
             _data['topic'] = topic
             _data['class'] = class_number
             _data['subject'] = subject
             _data['difficulty'] = difficulty
+            # get url question image
+            try:
+                image_element =  question_body.find_element(By.XPATH,  './/img[contains(@class, "Question_questionImage__")]')
+                q_image_url = image_element.get_attribute('src')
+                _data['qImage'] = q_image_url
+            except NoSuchElementException:
+                _data['qImage'] = ''
+            
 
             _q = question_element.text
             _data['q'] = _q
@@ -145,17 +152,29 @@ class Scraper():
                     time.sleep(self.PAUSE_TIME)
             explanation = explanation_element.text
             _data['e'] = explanation
+
+            # get type of question
+            katex_elements =  question_body.find_elements(By.XPATH,  './/span[contains(@class, "katex")]')
+            table_elements = question_body.find_elements(By.XPATH,  './/table')
+            if katex_elements:
+                _data['qType'] =  self.QTYPES[1]
+            elif table_elements:
+                _data['qType'] = self.QTYPES[2]
+            else:
+                _data['qType'] = self.QTYPES[0]
             _data = self.correct_data(_data)
             df = pd.DataFrame(data=_data,  index=[0])
             df.to_csv('.data/data.csv', mode='a', index=False, sep='|',  header=self.make_header)
             self.make_header = False
             del _data, df
             self.question_index += 1
-            print(f'{self.question_index} questions loaded , current subject : {subject} .')
+            print(f'{self.question_index} questions loaded for class:{class_number}, subject : {subject}. ')
 
 
     def correct_data(self,data):
-        _data = {}
-        for key , value in data.items():
-            _data[key] = str(value).replace('\n0\n', '°')
+        _data = data
+        _data['e'] = _data['e'].replace('Our experts are building a solution for this', '')
+        _data['a'] = _data['a'].lower()
+        for key in ['q','opA', 'opB', 'opC', 'opD', 'opE', 'e', 'a']:
+            _data[key] = _data[key].replace('\n', '')
         return _data
