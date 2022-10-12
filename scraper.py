@@ -13,6 +13,11 @@ import re
 from selenium.common.exceptions import NoSuchElementException  
 from slugify import slugify
 
+
+
+# LOWERcase the answer the link of images in qimage
+# Our experts are building a solution for this replace the answer with blank 
+# delete new line
 class Scraper():
     question_index = 0
     make_header = True
@@ -140,9 +145,17 @@ class Scraper():
                     time.sleep(self.PAUSE_TIME)
             explanation = explanation_element.text
             _data['e'] = explanation
+            _data = self.correct_data(_data)
             df = pd.DataFrame(data=_data,  index=[0])
             df.to_csv('.data/data.csv', mode='a', index=False, sep='|',  header=self.make_header)
             self.make_header = False
             del _data, df
             self.question_index += 1
             print(f'{self.question_index} questions loaded , current subject : {subject} .')
+
+
+    def correct_data(self,data):
+        _data = {}
+        for key , value in data.items():
+            _data[key] = str(value).replace('\n0\n', '°')
+        return _data
