@@ -154,8 +154,8 @@ class Scraper():
             _data['e'] = explanation
 
             # get type of question
-            katex_elements =  question_body.find_elements(By.XPATH,  './/span[contains(@class, "katex")]')
-            table_elements = question_body.find_elements(By.XPATH,  './/table')
+            katex_elements =  question_element.find_elements(By.XPATH,  './/span[contains(@class, "katex")]')
+            table_elements = question_element.find_elements(By.XPATH,  './/table')
             if katex_elements:
                 _data['qType'] =  self.QTYPES[1]
             elif table_elements:
